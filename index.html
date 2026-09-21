@@ -84,10 +84,6 @@ let stats = {
   recuperacao: 0,
   perda: 0
 };
-function removeStat(tipo) {
-  if (stats[tipo] > 0) {
-    stats[tipo]--;
-    update();
     
 function add(tipo) {
   stats[tipo]++;
