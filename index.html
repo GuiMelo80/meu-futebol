@@ -43,14 +43,14 @@ input {
 
 <h2>⚽ Ações</h2>
 
-<button class="green" onclick="add('golo')">⚽ Golo</button>
-<button class="green" onclick="add('assistencia')">🅰️ Assistência</button>
+<button class="green" onclick="add('golo')">⚽ +</button>
+<button class="red" onclick="removeStat('golo')">⚽ -</button>
 
-<button class="green" onclick="add('remate')">🎯 Remate</button>
-<button class="red" onclick="add('falhado')">❌ Remate Falhado</button>
+<button class="green" onclick="add('assistencia')">🅰️ +</button>
+<button class="red" onclick="removeStat('assistencia')">🅰️ -</button>
 
-<button class="green" onclick="add('passeCerto')">✅ Passe Certo</button>
-<button class="red" onclick="add('passeErrado')">❌ Passe Errado</button>
+<button class="green" onclick="add('passeCerto')">✅ +</button>
+<button class="red" onclick="removeStat('passeCerto')">❌ -</button>
 
 <button class="green" onclick="add('recuperacao')">🛑 Recuperação</button>
 <button class="red" onclick="add('perda')">❌ Perda</button>
