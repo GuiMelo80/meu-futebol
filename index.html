@@ -43,7 +43,9 @@ button {
 
 <button class="green" onclick="add('recuperacao')">🛑 Recuperação</button>
 <button class="red" onclick="add('perda')">❌ Perda</button>
-
+<button onclick="guardarJogo()" style="background:#2196F3;color:white;width:90%;padding:15px;font-size:18px;border-radius:10px;">
+💾 Guardar Jogo
+</button>
 <h2>📊 Estatísticas</h2>
 
 <p>⚽ Golos: <span id="golos">0</span></p>
@@ -62,7 +64,22 @@ let stats = {
   recuperacao: 0,
   perda: 0
 };
+function guardarJogo() {
 
+  let jogo = {
+    nome: document.getElementById("nome").value,
+    escalao: document.getElementById("escalao").value,
+    adversario: document.getElementById("adversario").value,
+    data: document.getElementById("data").value,
+    stats: stats
+  };
+
+  let jogos = JSON.parse(localStorage.getItem("jogos")) || [];
+  jogos.push(jogo);
+
+  localStorage.setItem("jogos", JSON.stringify(jogos));
+
+  mostrarHistorico();
 function add(tipo) {
   stats[tipo]++;
   update();
@@ -83,6 +100,24 @@ function update() {
   document.getElementById("nota").innerText = nota;
 }
 </script>
+<h2>📚 Histórico de Jogos</h2>
+<div id="historico"></div>
+  function mostrarHistorico() {
+  let jogos = JSON.parse(localStorage.getItem("jogos")) || [];
+  let html = "";
 
+  jogos.forEach(j => {
+    html += `
+    <div style="border:1px solid #ccc;margin:10px;padding:10px;border-radius:10px;">
+      <b>${j.nome}</b> (${j.escalao})<br>
+      🆚 ${j.adversario}<br>
+      📅 ${j.data}<br>
+      ⚽ Golos: ${j.stats.golo} | 🅰️ Assist: ${j.stats.assistencia}
+    </div>
+    `;
+  });
+
+  document.getElementById("historico").innerHTML = html;
+  mostrarHistorico();
 </body>
 </html>
