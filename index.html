@@ -8,33 +8,44 @@
 body {
   font-family: Arial;
   text-align: center;
+  padding: 10px;
 }
 
 button {
   width: 45%;
-  padding: 20px;
+  padding: 15px;
   margin: 5px;
-  font-size: 18px;
+  font-size: 16px;
   border-radius: 10px;
   border: none;
 }
 
 .green { background-color: #4CAF50; color: white; }
 .red { background-color: #f44336; color: white; }
+.blue { background-color: #2196F3; color: white; width: 90%; }
+
+input {
+  padding: 8px;
+  width: 80%;
+  margin: 5px;
+}
 </style>
 </head>
 
 <body>
+
 <h2>📋 Dados do Jogo</h2>
 
-<p>👤 Nome: <input type="text" id="nome"></p>
-<p>🏆 Escalão: <input type="text" id="escalao"></p>
-<p>🆚 Adversário: <input type="text" id="adversario"></p>
-<p>📅 Data: <input type="date" id="data"></p>
-<h2>⚽ Scouting</h2>
+<input type="text" id="nome" placeholder="Nome jogador"><br>
+<input type="text" id="escalao" placeholder="Escalão"><br>
+<input type="text" id="adversario" placeholder="Adversário"><br>
+<input type="date" id="data"><br>
+
+<h2>⚽ Ações</h2>
 
 <button class="green" onclick="add('golo')">⚽ Golo</button>
 <button class="green" onclick="add('assistencia')">🅰️ Assistência</button>
+
 <button class="green" onclick="add('remate')">🎯 Remate</button>
 <button class="red" onclick="add('falhado')">❌ Remate Falhado</button>
 
@@ -43,15 +54,18 @@ button {
 
 <button class="green" onclick="add('recuperacao')">🛑 Recuperação</button>
 <button class="red" onclick="add('perda')">❌ Perda</button>
-<button onclick="guardarJogo()" style="background:#2196F3;color:white;width:90%;padding:15px;font-size:18px;border-radius:10px;">
-💾 Guardar Jogo
-</button>
+
+<button class="blue" onclick="guardarJogo()">💾 Guardar Jogo</button>
+
 <h2>📊 Estatísticas</h2>
 
 <p>⚽ Golos: <span id="golos">0</span></p>
 <p>🅰️ Assistências: <span id="assistencias">0</span></p>
 <p>📈 % Passes: <span id="passes">0%</span></p>
 <p>⭐ Nota: <span id="nota">0</span></p>
+
+<h2>📚 Histórico</h2>
+<div id="historico"></div>
 
 <script>
 let stats = {
@@ -64,22 +78,7 @@ let stats = {
   recuperacao: 0,
   perda: 0
 };
-function guardarJogo() {
 
-  let jogo = {
-    nome: document.getElementById("nome").value,
-    escalao: document.getElementById("escalao").value,
-    adversario: document.getElementById("adversario").value,
-    data: document.getElementById("data").value,
-    stats: stats
-  };
-
-  let jogos = JSON.parse(localStorage.getItem("jogos")) || [];
-  jogos.push(jogo);
-
-  localStorage.setItem("jogos", JSON.stringify(jogos));
-
-  mostrarHistorico();
 function add(tipo) {
   stats[tipo]++;
   update();
@@ -99,10 +98,27 @@ function update() {
 
   document.getElementById("nota").innerText = nota;
 }
-</script>
-<h2>📚 Histórico de Jogos</h2>
-<div id="historico"></div>
-  function mostrarHistorico() {
+
+function guardarJogo() {
+
+  let jogo = {
+    nome: document.getElementById("nome").value,
+    escalao: document.getElementById("escalao").value,
+    adversario: document.getElementById("adversario").value,
+    data: document.getElementById("data").value,
+    stats: {...stats}
+  };
+
+  let jogos = JSON.parse(localStorage.getItem("jogos")) || [];
+  jogos.push(jogo);
+
+  localStorage.setItem("jogos", JSON.stringify(jogos));
+
+  mostrarHistorico();
+  resetStats();
+}
+
+function mostrarHistorico() {
   let jogos = JSON.parse(localStorage.getItem("jogos")) || [];
   let html = "";
 
@@ -112,12 +128,30 @@ function update() {
       <b>${j.nome}</b> (${j.escalao})<br>
       🆚 ${j.adversario}<br>
       📅 ${j.data}<br>
-      ⚽ Golos: ${j.stats.golo} | 🅰️ Assist: ${j.stats.assistencia}
+      ⚽ ${j.stats.golo} | 🅰️ ${j.stats.assistencia} | 📊 ${Math.round((j.stats.passeCerto/(j.stats.passeCerto+j.stats.passeErrado||1))*100)}%
     </div>
     `;
   });
 
   document.getElementById("historico").innerHTML = html;
-  mostrarHistorico();
+}
+
+function resetStats() {
+  stats = {
+    golo: 0,
+    assistencia: 0,
+    remate: 0,
+    falhado: 0,
+    passeCerto: 0,
+    passeErrado: 0,
+    recuperacao: 0,
+    perda: 0
+  };
+  update();
+}
+
+mostrarHistorico();
+</script>
+
 </body>
 </html>
