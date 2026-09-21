@@ -11,82 +11,62 @@ body {
   padding: 10px;
 }
 
-button {
-  width: 45%;
-  padding: 15px;
-  margin: 5px;
-  font-size: 16px;
-  border-radius: 10px;
-  border: none;
+.card {
+  background: #f5f5f5;
+  margin: 10px;
+  padding: 20px;
+  border-radius: 15px;
+  font-size: 20px;
+  touch-action: pan-y;
 }
 
-.green { background-color: #4CAF50; color: white; }
-.red { background-color: #f44336; color: white; }
-.blue { background-color: #2196F3; color: white; width: 90%; }
+.green { background: #4CAF50; color: white; }
+.red { background: #f44336; color: white; }
 
-input {
-  padding: 8px;
-  width: 80%;
-  margin: 5px;
-}
+h2 { margin-top: 20px; }
 </style>
 </head>
 
 <body>
 
-<h2>📋 Dados do Jogo</h2>
+<h2>⚽ Scouting</h2>
 
-<input type="text" id="nome" placeholder="Nome jogador"><br>
-<input type="text" id="escalao" placeholder="Escalão"><br>
-<input type="text" id="adversario" placeholder="Adversário"><br>
-<input type="date" id="data"><br>
-
-<h2>⚽ Ações</h2>
-
-<button class="green" onclick="add('golo')">⚽ +</button>
-<button class="red" onclick="removeStat('golo')">⚽ -</button>
-
-<button class="green" onclick="add('assistencia')">🅰️ +</button>
-<button class="red" onclick="removeStat('assistencia')">🅰️ -</button>
-
-<button class="green" onclick="add('passeCerto')">✅ +</button>
-<button class="red" onclick="removeStat('passeCerto')">❌ -</button> 
-  
-<button class="green" onclick="add('passeErrado')">✅ +</button>
-<button class="red" onclick="removeStat('passeErrado')">❌ -</button>
-
-<button class="green" onclick="add('dribleCerto')">✅ +</button>
-<button class="red" onclick="removeStat('dribleCerto')">❌ -</button>
-
-<button class="green" onclick="add('dribleErrado')">✅ +</button>
-<button class="red" onclick="removeStat('dribleErrado')">❌ -</button>
-  
-<button class="blue" onclick="guardarJogo()">💾 Guardar Jogo</button>
+<div class="card green" ontouchstart="startTouch(event, 'golo')" ontouchend="endTouch(event, 'golo')">⚽ Golo</div>
+<div class="card green" ontouchstart="startTouch(event, 'assistencia')" ontouchend="endTouch(event, 'assistencia')">🅰️ Assistência</div>
+<div class="card green" ontouchstart="startTouch(event, 'passeCerto')" ontouchend="endTouch(event, 'passeCerto')">✅ Passe Certo</div>
+<div class="card red" ontouchstart="startTouch(event, 'passeErrado')" ontouchend="endTouch(event, 'passeErrado')">❌ Passe Errado</div>
 
 <h2>📊 Estatísticas</h2>
 
 <p>⚽ Golos: <span id="golos">0</span></p>
 <p>🅰️ Assistências: <span id="assistencias">0</span></p>
 <p>📈 % Passes: <span id="passes">0%</span></p>
-<p>⭐ Nota: <span id="nota">0</span></p>
-
-<h2>📚 Histórico</h2>
-<div id="historico"></div>
 
 <script>
 let stats = {
   golo: 0,
   assistencia: 0,
-  remate: 0,
-  falhado: 0,
   passeCerto: 0,
-  passeErrado: 0,
-  recuperacao: 0,
-  perda: 0
+  passeErrado: 0
 };
-    
-function add(tipo) {
-  stats[tipo]++;
+
+let touchStartX = 0;
+
+function startTouch(e, tipo) {
+  touchStartX = e.changedTouches[0].screenX;
+}
+
+function endTouch(e, tipo) {
+  let touchEndX = e.changedTouches[0].screenX;
+
+  if (touchEndX < touchStartX - 50) {
+    // deslizar esquerda = desfazer
+    if (stats[tipo] > 0) stats[tipo]--;
+  } else {
+    // toque normal = adicionar
+    stats[tipo]++;
+  }
+
   update();
 }
 
@@ -94,69 +74,11 @@ function update() {
   document.getElementById("golos").innerText = stats.golo;
   document.getElementById("assistencias").innerText = stats.assistencia;
 
-  let totalPasses = stats.passeCerto + stats.passeErrado;
-  let percentPasses = totalPasses ? Math.round((stats.passeCerto / totalPasses) * 100) : 0;
+  let total = stats.passeCerto + stats.passeErrado;
+  let percent = total ? Math.round((stats.passeCerto / total) * 100) : 0;
 
-  document.getElementById("passes").innerText = percentPasses + "%";
-
-  let nota = (stats.golo*1.5 + stats.assistencia*1 + stats.passeCerto*0.1 - stats.perda*0.3);
-  nota = Math.max(0, Math.min(10, nota.toFixed(1)));
-
-  document.getElementById("nota").innerText = nota;
+  document.getElementById("passes").innerText = percent + "%";
 }
-
-function guardarJogo() {
-
-  let jogo = {
-    nome: document.getElementById("nome").value,
-    escalao: document.getElementById("escalao").value,
-    adversario: document.getElementById("adversario").value,
-    data: document.getElementById("data").value,
-    stats: {...stats}
-  };
-
-  let jogos = JSON.parse(localStorage.getItem("jogos")) || [];
-  jogos.push(jogo);
-
-  localStorage.setItem("jogos", JSON.stringify(jogos));
-
-  mostrarHistorico();
-  resetStats();
-}
-
-function mostrarHistorico() {
-  let jogos = JSON.parse(localStorage.getItem("jogos")) || [];
-  let html = "";
-
-  jogos.forEach(j => {
-    html += `
-    <div style="border:1px solid #ccc;margin:10px;padding:10px;border-radius:10px;">
-      <b>${j.nome}</b> (${j.escalao})<br>
-      🆚 ${j.adversario}<br>
-      📅 ${j.data}<br>
-      ⚽ ${j.stats.golo} | 🅰️ ${j.stats.assistencia} | 📊 ${Math.round((j.stats.passeCerto/(j.stats.passeCerto+j.stats.passeErrado||1))*100)}%
-    </div>
-    `;
-  });
-
-  document.getElementById("historico").innerHTML = html;
-}
-
-function resetStats() {
-  stats = {
-    golo: 0,
-    assistencia: 0,
-    remate: 0,
-    falhado: 0,
-    passeCerto: 0,
-    passeErrado: 0,
-    recuperacao: 0,
-    perda: 0
-  };
-  update();
-}
-
-mostrarHistorico();
 </script>
 
 </body>
