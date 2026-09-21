@@ -83,7 +83,11 @@ function add(tipo) {
   stats[tipo]++;
   update();
 }
-
+function removeStat(tipo) {
+  if (stats[tipo] > 0) {
+    stats[tipo]--;
+    update();
+  }
 function update() {
   document.getElementById("golos").innerText = stats.golo;
   document.getElementById("assistencias").innerText = stats.assistencia;
