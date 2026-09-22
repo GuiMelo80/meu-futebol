@@ -88,9 +88,31 @@ function apagarHistorico() {
     localStorage.removeItem("jogos");
     mostrarHistorico();
   }
+}let touchStartXHist = 0;
+let selectedIndex = null;
+
+function startTouchHist(e, index){
+  touchStartXHist = e.changedTouches[0].screenX;
+  selectedIndex = index;
+}
+
+function endTouchHist(e, index){
+  let touchEndX = e.changedTouches[0].screenX;
+
+  if(touchEndX < touchStartXHist - 50){
+    apagarJogo(index);
+  }
 }
 let touchStartX = 0;
+function apagarJogo(index){
+  let jogos = JSON.parse(localStorage.getItem("jogos")) || [];
 
+  if(confirm("Apagar este jogo?")){
+    jogos.splice(index,1);
+    localStorage.setItem("jogos", JSON.stringify(jogos));
+    mostrarHistorico();
+  }
+}
 function startTouch(e,tipo){
   touchStartX = e.changedTouches[0].screenX;
 }
@@ -149,10 +171,31 @@ function guardarJogo(){
   mostrarHistorico();
   resetStats();
 }
-
 function mostrarHistorico(){
   let jogos = JSON.parse(localStorage.getItem("jogos")) || [];
   let html = "";
+
+  jogos.forEach((j, index)=>{
+    let p = Math.round((j.stats.passeCerto/(j.stats.passeCerto+j.stats.passeErrado||1))*100);
+    let d = Math.round((j.stats.dribleGanho/(j.stats.dribleGanho+j.stats.driblePerdido||1))*100);
+
+    html += `
+    <div class="histItem"
+         ontouchstart="startTouchHist(event, ${index})"
+         ontouchend="endTouchHist(event, ${index})"
+         style="border:1px solid #ccc;margin:10px;padding:10px;border-radius:10px;">
+         
+      <b>${j.nome}</b> (${j.escalao})<br>
+      🆚 ${j.adversario}<br>
+      📅 ${j.data}<br>
+      ⚽ ${j.stats.golo} | 🅰️ ${j.stats.assistencia}<br>
+      📈 Passes: ${p}% | 🔥 Dribles: ${d}%
+    </div>
+    `;
+  });
+
+  document.getElementById("historico").innerHTML = html;
+}
 
   jogos.forEach(j=>{
     let p = Math.round((j.stats.passeCerto/(j.stats.passeCerto+j.stats.passeErrado||1))*100);
