@@ -41,54 +41,55 @@ h2 { margin-top: 20px; }
 <input type="text" id="adversario" placeholder="Adversário"><br>
 <input type="date" id="data"><br>
 
-<h2>⚽ Ações (tocar = + / deslizar esquerda = desfazer)</h2>
+<h2>⚽ Ações (toque = + / deslizar esquerda = desfazer)</h2>
 
-<div class="card green" ontouchstart="startTouch(event, 'golo')" ontouchend="endTouch(event, 'golo')">⚽ Golo</div>
-<div class="card green" ontouchstart="startTouch(event, 'assistencia')" ontouchend="endTouch(event, 'assistencia')">🅰️ Assistência</div>
+<div class="card green" ontouchstart="startTouch(event,'golo')" ontouchend="endTouch(event,'golo')">⚽ Golo</div>
+<div class="card green" ontouchstart="startTouch(event,'assistencia')" ontouchend="endTouch(event,'assistencia')">🅰️ Assistência</div>
 
-<div class="card green" ontouchstart="startTouch(event, 'remate')" ontouchend="endTouch(event, 'remate')">🎯 Remate</div>
-<div class="card red" ontouchstart="startTouch(event, 'falhado')" ontouchend="endTouch(event, 'falhado')">❌ Remate Falhado</div>
+<div class="card green" ontouchstart="startTouch(event,'remate')" ontouchend="endTouch(event,'remate')">🎯 Remate</div>
+<div class="card red" ontouchstart="startTouch(event,'falhado')" ontouchend="endTouch(event,'falhado')">❌ Remate Falhado</div>
 
-<div class="card green" ontouchstart="startTouch(event, 'passeCerto')" ontouchend="endTouch(event, 'passeCerto')">✅ Passe Certo</div>
-<div class="card red" ontouchstart="startTouch(event, 'passeErrado')" ontouchend="endTouch(event, 'passeErrado')">❌ Passe Errado</div>
+<div class="card green" ontouchstart="startTouch(event,'passeCerto')" ontouchend="endTouch(event,'passeCerto')">✅ Passe Certo</div>
+<div class="card red" ontouchstart="startTouch(event,'passeErrado')" ontouchend="endTouch(event,'passeErrado')">❌ Passe Errado</div>
 
-<div class="card green" ontouchstart="startTouch(event, 'recuperacao')" ontouchend="endTouch(event, 'recuperacao')">🛑 Recuperação</div>
-<div class="card red" ontouchstart="startTouch(event, 'perda')" ontouchend="endTouch(event, 'perda')">❌ Perda</div>
+<div class="card green" ontouchstart="startTouch(event,'dribleGanho')" ontouchend="endTouch(event,'dribleGanho')">🟢 Drible Ganho</div>
+<div class="card red" ontouchstart="startTouch(event,'driblePerdido')" ontouchend="endTouch(event,'driblePerdido')">🔴 Drible Perdido</div>
+
+<div class="card green" ontouchstart="startTouch(event,'recuperacao')" ontouchend="endTouch(event,'recuperacao')">🛑 Recuperação</div>
+<div class="card red" ontouchstart="startTouch(event,'perda')" ontouchend="endTouch(event,'perda')">❌ Perda</div>
 
 <div class="card blue" onclick="guardarJogo()">💾 Guardar Jogo</div>
+<div class="card red" onclick="apagarHistorico()">🗑️ Apagar Histórico</div>
 
 <h2>📊 Estatísticas</h2>
 <p>⚽ Golos: <span id="golos">0</span></p>
 <p>🅰️ Assistências: <span id="assistencias">0</span></p>
 <p>📈 % Passes: <span id="passes">0%</span></p>
+<p>🔥 % Dribles: <span id="dribles">0%</span></p>
 <p>⭐ Nota: <span id="nota">0</span></p>
 
-<h2>📚 Histórico</h2>
+<h2>📚 Histórico (swipe ← apagar | swipe → editar)</h2>
 <div id="historico"></div>
 
 <script>
 let stats = {
-  golo: 0,
-  assistencia: 0,
-  remate: 0,
-  falhado: 0,
-  passeCerto: 0,
-  passeErrado: 0,
-  recuperacao: 0,
-  perda: 0
+  golo:0, assistencia:0, remate:0, falhado:0,
+  passeCerto:0, passeErrado:0,
+  dribleGanho:0, driblePerdido:0,
+  recuperacao:0, perda:0
 };
 
 let touchStartX = 0;
 
-function startTouch(e, tipo) {
+function startTouch(e,tipo){
   touchStartX = e.changedTouches[0].screenX;
 }
 
-function endTouch(e, tipo) {
+function endTouch(e,tipo){
   let touchEndX = e.changedTouches[0].screenX;
 
-  if (touchEndX < touchStartX - 50) {
-    if (stats[tipo] > 0) stats[tipo]--;
+  if(touchEndX < touchStartX - 50){
+    if(stats[tipo] > 0) stats[tipo]--;
   } else {
     stats[tipo]++;
   }
@@ -96,27 +97,37 @@ function endTouch(e, tipo) {
   update();
 }
 
-function update() {
+function update(){
   document.getElementById("golos").innerText = stats.golo;
   document.getElementById("assistencias").innerText = stats.assistencia;
 
   let totalPasses = stats.passeCerto + stats.passeErrado;
-  let percentPasses = totalPasses ? Math.round((stats.passeCerto / totalPasses) * 100) : 0;
-
+  let percentPasses = totalPasses ? Math.round((stats.passeCerto/totalPasses)*100) : 0;
   document.getElementById("passes").innerText = percentPasses + "%";
 
-  let nota = (stats.golo*1.5 + stats.assistencia*1 + stats.passeCerto*0.1 - stats.perda*0.3);
-  nota = Math.max(0, Math.min(10, nota.toFixed(1)));
+  let totalDribles = stats.dribleGanho + stats.driblePerdido;
+  let percentDribles = totalDribles ? Math.round((stats.dribleGanho/totalDribles)*100) : 0;
+  document.getElementById("dribles").innerText = percentDribles + "%";
 
+  let nota = (
+    stats.golo*1.5 +
+    stats.assistencia*1 +
+    stats.passeCerto*0.1 +
+    stats.dribleGanho*0.3 -
+    stats.driblePerdido*0.2 -
+    stats.perda*0.3
+  );
+
+  nota = Math.max(0, Math.min(10, nota.toFixed(1)));
   document.getElementById("nota").innerText = nota;
 }
 
-function guardarJogo() {
+function guardarJogo(){
   let jogo = {
-    nome: document.getElementById("nome").value,
-    escalao: document.getElementById("escalao").value,
-    adversario: document.getElementById("adversario").value,
-    data: document.getElementById("data").value,
+    nome: nome.value,
+    escalao: escalao.value,
+    adversario: adversario.value,
+    data: data.value,
     stats: {...stats}
   };
 
@@ -128,34 +139,88 @@ function guardarJogo() {
   resetStats();
 }
 
-function mostrarHistorico() {
+function apagarHistorico(){
+  if(confirm("Apagar todo o histórico?")){
+    localStorage.removeItem("jogos");
+    mostrarHistorico();
+  }
+}
+
+let touchStartXHist = 0;
+
+function startTouchHist(e,index){
+  touchStartXHist = e.changedTouches[0].screenX;
+}
+
+function endTouchHist(e,index){
+  let touchEndX = e.changedTouches[0].screenX;
+
+  if(touchEndX < touchStartXHist - 50){
+    apagarJogo(index);
+  } else if(touchEndX > touchStartXHist + 50){
+    editarJogo(index);
+  }
+}
+
+function apagarJogo(index){
+  let jogos = JSON.parse(localStorage.getItem("jogos")) || [];
+  if(confirm("Apagar este jogo?")){
+    jogos.splice(index,1);
+    localStorage.setItem("jogos", JSON.stringify(jogos));
+    mostrarHistorico();
+  }
+}
+
+function editarJogo(index){
+  let jogos = JSON.parse(localStorage.getItem("jogos")) || [];
+  let j = jogos[index];
+
+  nome.value = j.nome;
+  escalao.value = j.escalao;
+  adversario.value = j.adversario;
+  data.value = j.data;
+
+  stats = {...j.stats};
+  update();
+
+  jogos.splice(index,1);
+  localStorage.setItem("jogos", JSON.stringify(jogos));
+
+  mostrarHistorico();
+
+  alert("✏️ Edita e guarda novamente");
+}
+
+function mostrarHistorico(){
   let jogos = JSON.parse(localStorage.getItem("jogos")) || [];
   let html = "";
 
-  jogos.forEach(j => {
+  jogos.forEach((j,index)=>{
+    let p = Math.round((j.stats.passeCerto/(j.stats.passeCerto+j.stats.passeErrado||1))*100);
+    let d = Math.round((j.stats.dribleGanho/(j.stats.dribleGanho+j.stats.driblePerdido||1))*100);
+
     html += `
-    <div style="border:1px solid #ccc;margin:10px;padding:10px;border-radius:10px;">
+    <div ontouchstart="startTouchHist(event,${index})"
+         ontouchend="endTouchHist(event,${index})"
+         style="border:1px solid #ccc;margin:10px;padding:10px;border-radius:10px;">
       <b>${j.nome}</b> (${j.escalao})<br>
       🆚 ${j.adversario}<br>
       📅 ${j.data}<br>
-      ⚽ ${j.stats.golo} | 🅰️ ${j.stats.assistencia} | 📊 ${Math.round((j.stats.passeCerto/(j.stats.passeCerto+j.stats.passeErrado||1))*100)}%
+      ⚽ ${j.stats.golo} | 🅰️ ${j.stats.assistencia}<br>
+      📈 ${p}% | 🔥 ${d}%
     </div>
     `;
   });
 
-  document.getElementById("historico").innerHTML = html;
+  historico.innerHTML = html;
 }
 
-function resetStats() {
+function resetStats(){
   stats = {
-    golo: 0,
-    assistencia: 0,
-    remate: 0,
-    falhado: 0,
-    passeCerto: 0,
-    passeErrado: 0,
-    recuperacao: 0,
-    perda: 0
+    golo:0, assistencia:0, remate:0, falhado:0,
+    passeCerto:0, passeErrado:0,
+    dribleGanho:0, driblePerdido:0,
+    recuperacao:0, perda:0
   };
   update();
 }
