@@ -83,7 +83,12 @@ let stats = {
   recuperacao: 0,
   perda: 0
 };
-
+function apagarHistorico() {
+  if (confirm("Tens a certeza que queres apagar todo o histórico?")) {
+    localStorage.removeItem("jogos");
+    mostrarHistorico();
+  }
+}
 let touchStartX = 0;
 
 function startTouch(e,tipo){
@@ -135,7 +140,8 @@ function guardarJogo(){
     data: document.getElementById("data").value,
     stats: {...stats}
   };
-
+<div class="card red" onclick="apagarHistorico()">🗑️ Apagar Histórico</div>
+  
   let jogos = JSON.parse(localStorage.getItem("jogos")) || [];
   jogos.push(jogo);
   localStorage.setItem("jogos", JSON.stringify(jogos));
